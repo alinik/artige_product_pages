@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
      rabbitmqadmin declare user name=admin password=123 tags=administrator
      rabbitmqadmin declare permission user=admin vhost=/ configure=.* write=.* read=.*
      #db user admin:123
-     sudo -u postgres psql -c "CREATE ROLE admin PASSWORD 'md52d7f60a0f7aed62e5268be89bee5dfbf' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;"
+     sudo -u postgres psql -c "CREATE ROLE admin PASSWORD 'md5d829b843a6550a947e82f2f38ed6b7a7' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;"
      sudo -u postgres createdb artige_product_pages -O admin ||true
   SHELL
   config.vm.provision "shell",privileged:false, inline: <<-SHELL
