@@ -261,3 +261,13 @@ SOCIALACCOUNT_ADAPTER = "artige_product_pages.users.adapters.SocialAccountAdapte
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+#
+# os.environ.setdefault(
+#     "DJANGO_SETTINGS_MODULE", "config.settings.local"
+# )  # pragma: no cover
+#
+# app = Celery("product")
+# app.config_from_object('django.conf:settings', namespace='CELERY')
+#
+# app.autodiscover_tasks()
