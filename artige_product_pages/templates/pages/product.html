@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+
+<link href='{% static "css/bootstrap.css" %}' rel="stylesheet">
+<link href='{% static "css/owl.carousel.min.css" %}' rel="stylesheet">
+<link href='{% static "css/owl.theme.default.min.css" %}' rel="stylesheet">
+<link href='{% static "css/font-awesome.css" %}' rel="stylesheet">
+<link href='{% static "css/project.css" %}' rel="stylesheet">
+{% endblock %}
+{% block javascript %}
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/owl.carousel.min.js' %}"></script>
+<script src="{% static 'js/scripts.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <br/>
+    <div class="col-md-9">
+      {% for product_item in products%}
+      <div class="jumbotron card card-block">
+        <h2>
+          {{product_item.title}}
+
+        </h2>
+        <hr/>
+        <p>
+        <div class="owl-carousel">
+          {% for pic in product_item.images.all %}
+          <img src="{{pic.image.url}}"/>
+          {% endfor %}
+        </div>
+        </p>
+        <p>
+          {{product_item.description}}
+        </p>
+        <hr/>
+        <p>
+          {% for tag in product_item.tags.all %}
+          <a href="{% url 'products:product_by_tag' tag|slice:'1:' %}">{{tag}}</a>
+          {% endfor %}
+          <span class="ownerinfo">
+            <font color="black">Product By</font>
+            <a href="{% url 'products:owner_products_list' product_item.owner_id%}">{{product_item.owner}}</a>
+          </span>
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+
+
+    <div class="col-md-3">
+      {%if owner_profile %}
+      <div class="card bg-default">
+        <h5 class="card-header">
+          {{owner_profile.name}}
+        </h5>
+        <div class="card-body">
+          <p class="card-text">
+            Card content
+          </p>
+        </div>
+        <div class="card-footer">
+          Card footer
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock  %}
