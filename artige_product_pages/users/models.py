@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import *
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-
+from phonenumber_field.formfields import PhoneNumberField
 
 class User(AbstractUser):
     # First Name and Last Name do not cover name patterns
@@ -37,3 +37,6 @@ class InstagramAccount(Account):
         if not self.id:
             self.endpoint = 1
         super(InstagramAccount, self).save(force_insert, force_update, using, update_fields)
+
+class TelegramAccount(Account):
+    contact_mobile_number = PhoneNumberField(blank=True)
