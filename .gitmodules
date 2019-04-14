@@ -1,0 +1,6 @@
+[submodule "instagram_private_api"]
+	path = endpoints/libs/instagram_private_api
+	url = git@github.com:ping/instagram_private_api.git
+[submodule "instagram_private_api_extensions"]
+	path = endpoints/libs/instagram_private_api_extensions
+	url = git@github.com:ping/instagram_private_api_extensions.git
