@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import codecs
 from pprint import PrettyPrinter
 
@@ -15,7 +17,7 @@ def from_json(json_object):
 
 
 def get_path(path):
-    return path.as_posix() if isinstance(path, os.PathLike) else str(path)
+    return path.as_posix() if isinstance(path, Path) else str(path)
 
 
 get_std = lambda item: item.get('media_or_ad').get('images').get('standard_resolution').get('url')

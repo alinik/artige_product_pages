@@ -53,6 +53,8 @@ Werkzeug = "==0.15.0"
 Sphinx = "==1.8.5"
 factory_boy = "==2.11.1"
 django_coverage_plugin = "==1.6.0"
+phonenumbers = "==8.10.9"
+django-phonenumber-field = "==2.3.1"
 
 [requires]
 python_version = "3.6"

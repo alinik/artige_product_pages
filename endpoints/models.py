@@ -30,43 +30,49 @@ if not cache_root.is_dir():
 
 
 class InstagramAccount(models.Model):
-    _debug = False
-    artige_id = models.ManyToOneRel(User)
-    private = JSONField()
-    username = models.CharField(max_length=128)
-    password = models.CharField(max_length=256)
-
-
-class Instagram(models.Model):
     key = r'insta'
     insta_cache = cache_root / key
     if not insta_cache.is_dir():
         insta_cache.mkdir()
+    _debug = False
+    cache = models.BooleanField(default=True)
+    artige_id = models.ManyToOneRel(User, field_name='owner')
+    private = JSONField(default=dict)
     cookie = JSONField(default=dict)
-    account = models.OneToOneField(InstagramAccount)
+    username = models.CharField(max_length=128)
+    password = models.CharField(max_length=256)
     instagram_id = models.PositiveIntegerField()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, username, password, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._session = None
         self.cookie_expiry = None
-        self._username = self.account.username
-        self._usercache = self.insta_cache / self._username
-        if not self._usercache.is_dir():
-            self._usercache.mkdir()
-        self.logger = logging.getLogger('%s%s' % (self.key, self._username))
+        # self.private = json( { 'username': username, 'password': password} )
+        self.username = username
+        self.password = password
+        self._usercache = self.insta_cache / username
+
+        if kwargs.get('debug', False):
+            self.logger = logging.getLogger('%s%s' % (self.key, self.username))
+            self.debug = True
+        if kwargs.get('cache', True) or self.debug:
+            self.cache = True
+            if not self._usercache.is_dir():
+                self._usercache.mkdir()
+        else:
+            self.cache = False
 
     def login(self, force=False):
-        self.logger.info('Creating a new session for user %s', self._username)
+        self.logger.info('Creating a new session for user %s', self.username)
         if not force and (self._session or self.cookie):
             try:
                 self.load_session()
                 return True
             except:
                 self.logger.debug('Session expired')
-        self._password = self.account.password
-        if not self._password:
-            raise ClientLoginRequiredError('Password required %s', self._username)
+        password = self.password
+        if not password:
+            raise ClientLoginRequiredError('Password required %s', self.username)
         self.logger.debug('Trying to re-login')
         try:
             login_dict = {}
@@ -76,7 +82,7 @@ class Instagram(models.Model):
                 login_dict['device_id'] = self._session.device_id
             self.logger.debug('Client version: {0!s}'.format(client_version))
             session = Client(
-                self._username, self._password,
+                self.username, self.password,
                 **login_dict,
                 on_login=lambda x: self.onlogin_callback(x)
             )
@@ -89,13 +95,14 @@ class Instagram(models.Model):
         except Exception as e:
             self.logger.error('Unexpected Exception: {0!s}'.format(e))
             raise e
-        self.logger.info('Session for user %s is created', self._username)
+        self.logger.info('Session for user %s is created', self.username)
         self._session = session
         return True
 
     def load_session(self):
-        self.logger.info('Loading an existing session for user %s', self._username)
+        self.logger.info('Loading an existing session for user %s', self.username)
         self.logger.debug('Client version: {0!s}'.format(client_version))
+        session = None
         try:
             if self.cookie:
                 cached_settings = self.cookie
@@ -103,7 +110,7 @@ class Instagram(models.Model):
             else:
                 raise ClientLoginRequiredError('cookie has not ben saved', code=-1)
             # reuse auth settings
-            session = Client(self._username, None, settings=cached_settings)
+            session = Client(self.username, None, settings=cached_settings)
         except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
             self.logger.warning('ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
             # Login expired
@@ -136,10 +143,9 @@ class Instagram(models.Model):
         :param kwargs: additional insta post keys
         :return: dict
         '''
-        save_path = self._usercache / str(now())
+        save_path = self.get_cache()
         uri = get_path(image)
-        photo_data, photo_size = media.prepare_image(uri, aspect_ratios=aspect_ratios,
-                                                        save_path=save_path)
+        photo_data, photo_size = media.prepare_image(uri, aspect_ratios=aspect_ratios, save_path=save_path)
         self._session.post_photo(photo_data, photo_size, caption=caption, **kwargs)
 
     def post_photo_story(self, image):
@@ -148,7 +154,7 @@ class Instagram(models.Model):
         :param image: image uri
         :return: dict
         '''
-        save_path = self._usercache / str(now())
+        save_path = self.get_cache()
         aspect_ratios = MediaRatios.reel
         uri = get_path(image)
         photo_data, photo_size = media.prepare_image(uri, aspect_ratios=aspect_ratios,
@@ -250,6 +256,11 @@ class Instagram(models.Model):
     get_cap = staticmethod(get_cap)
     get_pic = staticmethod(get_pic)
     get_user = staticmethod(get_user)
+
+    def get_cache(self):
+        if self.cache:
+            return self._usercache / str(now())
+        return None
 
     def onlogin_callback(self, cookie, new_settings_file=None):
         'saves cookies upon successful login'
