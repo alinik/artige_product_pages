@@ -18,3 +18,10 @@ float: right;
 font-size: small;
 color: blue;
 }
+.avatar
+{
+width:100px;
+height:100px;
+margin:2px;
+margin-left:30%;
+}

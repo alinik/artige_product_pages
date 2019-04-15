@@ -7,6 +7,7 @@ from config.settings.base import MEDIA_ROOT
 
 
 class Product(Model):
+    product_id = CharField(max_length=4096)
     owner = ForeignKey(User, on_delete=CASCADE)
     title = CharField(max_length=4096)
     description = CharField(max_length=4096)

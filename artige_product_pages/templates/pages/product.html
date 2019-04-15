@@ -23,8 +23,7 @@
       {% for product_item in products%}
       <div class="jumbotron card card-block">
         <h2>
-          {{product_item.title}}
-
+          <a href="{% url 'products:owner_product_list' product_item.owner_id product_item.product_id%}" style="color:black">{{product_item.title}}</a>
         </h2>
         <hr/>
         <p>
@@ -55,17 +54,13 @@
     <div class="col-md-3">
       {%if owner_profile %}
       <div class="card bg-default">
+        <div>
+          <img class="avatar" src="{% static 'images/avatar/default.png' %}"/>
+        </div>
         <h5 class="card-header">
-          {{owner_profile.name}}
+          Product Owner:
+          {{owner_profile}}
         </h5>
-        <div class="card-body">
-          <p class="card-text">
-            Card content
-          </p>
-        </div>
-        <div class="card-footer">
-          Card footer
-        </div>
       </div>
       {% endif %}
     </div>
