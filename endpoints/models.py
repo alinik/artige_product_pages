@@ -2,8 +2,8 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.timezone import now
 
-from artige_product_pages.users.models import User
 from .apps import EndpointsConfig
+from artige_product_pages.users.models import InstagramAccount
 # Create your models here.
 from .helper import *
 from config.settings.base import MEDIA_ROOT, ROOT_DIR
@@ -29,31 +29,29 @@ if not cache_root.is_dir():
     cache_root.mkdir()
 
 
-class InstagramAccount(models.Model):
+class InstagramAccount(InstagramAccount):
     key = r'insta'
     insta_cache = cache_root / key
     if not insta_cache.is_dir():
         insta_cache.mkdir()
     _debug = False
     cache = models.BooleanField(default=True)
-    artige_id = models.ManyToOneRel(User, field_name='owner')
     private = JSONField(default=dict)
     cookie = JSONField(default=dict)
-    username = models.CharField(max_length=128)
-    password = models.CharField(max_length=256)
-    instagram_id = models.PositiveIntegerField()
+    # insta_user = models.CharField(max_length=128)
+    # password = models.CharField(max_length=256)
+    # insta_id = models.PositiveIntegerField()
 
     def __init__(self, username, password, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._session = None
         self.cookie_expiry = None
-        # self.private = json( { 'username': username, 'password': password} )
-        self.username = username
-        self.password = password
+        self.private = {'password': password}
+        self.insta_user = username
         self._usercache = self.insta_cache / username
 
         if kwargs.get('debug', False):
-            self.logger = logging.getLogger('%s%s' % (self.key, self.username))
+            self.logger = logging.getLogger('%s%s' % (self.key, self.insta_user))
             self.debug = True
         if kwargs.get('cache', True) or self.debug:
             self.cache = True
@@ -63,16 +61,16 @@ class InstagramAccount(models.Model):
             self.cache = False
 
     def login(self, force=False):
-        self.logger.info('Creating a new session for user %s', self.username)
+        self.logger.info('Creating a new session for user %s', self.insta_user)
         if not force and (self._session or self.cookie):
             try:
                 self.load_session()
                 return True
             except:
                 self.logger.debug('Session expired')
-        password = self.password
+        password = self.private.get('password')
         if not password:
-            raise ClientLoginRequiredError('Password required %s', self.username)
+            raise ClientLoginRequiredError('Password required %s', self.insta_user)
         self.logger.debug('Trying to re-login')
         try:
             login_dict = {}
@@ -82,7 +80,7 @@ class InstagramAccount(models.Model):
                 login_dict['device_id'] = self._session.device_id
             self.logger.debug('Client version: {0!s}'.format(client_version))
             session = Client(
-                self.username, self.password,
+                self.insta_user, password,
                 **login_dict,
                 on_login=lambda x: self.onlogin_callback(x)
             )
@@ -95,12 +93,12 @@ class InstagramAccount(models.Model):
         except Exception as e:
             self.logger.error('Unexpected Exception: {0!s}'.format(e))
             raise e
-        self.logger.info('Session for user %s is created', self.username)
+        self.logger.info('Session for user %s is created', self.insta_user)
         self._session = session
         return True
 
     def load_session(self):
-        self.logger.info('Loading an existing session for user %s', self.username)
+        self.logger.info('Loading an existing session for user %s', self.insta_user)
         self.logger.debug('Client version: {0!s}'.format(client_version))
         session = None
         try:
@@ -110,7 +108,7 @@ class InstagramAccount(models.Model):
             else:
                 raise ClientLoginRequiredError('cookie has not ben saved', code=-1)
             # reuse auth settings
-            session = Client(self.username, None, settings=cached_settings)
+            session = Client(self.insta_user, None, settings=cached_settings)
         except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
             self.logger.warning('ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
             # Login expired
