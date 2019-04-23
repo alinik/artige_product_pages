@@ -65,6 +65,8 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
+    "telegrambot",
+    'django_telegrambot'
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -72,7 +74,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "rest_framework",
-    "sorl.thumbnail",
+    "sorl.thumbnail"
 ]
 LOCAL_APPS = [
     "artige_product_pages.users.apps.UsersAppConfig",
